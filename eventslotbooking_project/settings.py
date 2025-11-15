@@ -145,9 +145,9 @@ WSGI_APPLICATION = "eventslotbooking_project.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'slot_booking',   # Your Database Name
+        'NAME': 'slot_booking.dev',   # Your Database Name
         'USER': 'root',            # DB Username
-        'PASSWORD': 'root',        # DB Password
+        'PASSWORD': 'IlDBServer@TcxR@$25',        # DB Password
         'HOST': '127.0.0.1',       # or 'localhost'
         'PORT': '3306',            # Default MySQL port
         'OPTIONS': {
