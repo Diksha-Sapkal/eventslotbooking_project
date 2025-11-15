@@ -25,9 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-mo*3e$b1ab1xu!g%v)3r%wz3x1k4z$-^*=k95p0yb&vbl_xni8"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['31.97.186.220', 'dev.eventslotbooking.ilserver.space']
 
 
 # Application definition
@@ -145,9 +145,9 @@ WSGI_APPLICATION = "eventslotbooking_project.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'slot_booking',   # Your Database Name
+        'NAME': 'slot_booking.dev',   # Your Database Name
         'USER': 'root',            # DB Username
-        'PASSWORD': 'root',        # DB Password
+        'PASSWORD': 'IlDBServer@TcxR@$25',        # DB Password
         'HOST': '127.0.0.1',       # or 'localhost'
         'PORT': '3306',            # Default MySQL port
         'OPTIONS': {
