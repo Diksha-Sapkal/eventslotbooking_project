@@ -80,29 +80,29 @@ class EventForm(forms.ModelForm):
         model = Event
         fields = ['name', 'venue', 'description', 'start_date', 'end_date']
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            if field.required:
-                field.label = f"{field.label} *"
+def __init__(self, *args, **kwargs):
+      super().__init__(*args, **kwargs)
+      for field_name, field in self.fields.items():
+        if field.required:
+            label = field.label or field_name.replace('_', ' ').title()
+            field.label = f"{label} *"
+def clean(self):
+    cleaned_data = super().clean()
+    start_date = cleaned_data.get('start_date')
+    end_date = cleaned_data.get('end_date')
+    today = timezone.now().date()  # compare dates only
 
-    def clean(self):
-        # ...existing code...
-        cleaned_data = super().clean()
-        start_date = cleaned_data.get('start_date')
-        end_date = cleaned_data.get('end_date')
 
-        if start_date and start_date < timezone.now():
-            raise forms.ValidationError("Event start date cannot be in the past.")
-        
-        if end_date and end_date < timezone.now():
-            raise forms.ValidationError("Event end date cannot be in the past.")
-        
-        if start_date and end_date and start_date >= end_date:
-            raise forms.ValidationError("End date must be after start date.")
+    if start_date and start_date < today:
+        raise forms.ValidationError("Event start date cannot be in the past.")
 
-        return cleaned_data
+    if end_date and end_date < today:
+        raise forms.ValidationError("Event end date cannot be in the past.")
 
+    if start_date and end_date and start_date > end_date:
+        raise forms.ValidationError("End date cannot be before start date.")
+
+    return cleaned_data
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):

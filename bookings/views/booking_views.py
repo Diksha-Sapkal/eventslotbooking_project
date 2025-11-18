@@ -1,3 +1,5 @@
+# 
+
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
@@ -5,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
-from django.db.models import Q
+from django.db.models import Q, F
 from bookings.models.booking_model import Booking
 from bookings.serializers.booking_serializer import BookingSerializer
 from drf_yasg.utils import swagger_auto_schema
@@ -23,12 +25,19 @@ booking_example = openapi.Schema(
 )
 
 
+# ======================================================================
+# LIST + CREATE BOOKING
+# ======================================================================
 @swagger_auto_schema(method='get', responses={200: BookingSerializer(many=True)})
 @swagger_auto_schema(method='post', request_body=booking_example)
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def booking_list(request):
     user = request.user
+
+    # ---------------------------------------------------------------
+    # Get booking list
+    # ---------------------------------------------------------------
     if request.method == 'GET':
         search = request.GET.get('search', '')
         status_filter = request.GET.get('status')
@@ -63,6 +72,7 @@ def booking_list(request):
         paginator = PageNumberPagination()
         paginator.page_size = int(request.GET.get('page_size', 10))
         bookings = bookings.select_related('event', 'slot', 'user')
+
         result_page = paginator.paginate_queryset(bookings, request)
         serializer = BookingSerializer(result_page, many=True)
         return paginator.get_paginated_response({
@@ -70,46 +80,116 @@ def booking_list(request):
             "data": serializer.data
         })
 
+    # ---------------------------------------------------------------
+    # CREATE BOOKING
+    # ---------------------------------------------------------------
     serializer = BookingSerializer(data=request.data, context={'request': request})
+
     if serializer.is_valid():
+        slot = serializer.validated_data["slot"]
+        attendees = serializer.validated_data["attendees_count"]
+
+        # ================= CHECK SLOT BLOCKED =================
+        if slot.is_blocked:
+            return Response({"message": "This slot is blocked."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # ================= CHECK SLOT CAPACITY =================
+        if slot.capacity < attendees:
+            return Response(
+                {"message": "Slot does not have enough capacity.",
+                 "remaining_capacity": slot.capacity},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # ------------------- Reduce slot capacity -------------------
+        slot.capacity = F('capacity') - attendees
+        slot.save()
+
+        slot.refresh_from_db()  # refresh to get updated value
+
         booking = serializer.save()
+
         return Response({
             "message": "Booking created successfully",
             "data": BookingSerializer(booking).data
         }, status=status.HTTP_201_CREATED)
-    return Response({"message": "Booking creation failed", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response(
+        {"message": "Booking creation failed", "errors": serializer.errors},
+        status=status.HTTP_400_BAD_REQUEST
+    )
 
 
+# ======================================================================
+# FETCH + UPDATE BOOKING
+# ======================================================================
 @swagger_auto_schema(method='get', responses={200: BookingSerializer()})
 @swagger_auto_schema(method='patch', request_body=booking_example)
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def booking_detail(request, pk):
     booking = get_object_or_404(Booking, pk=pk, deleted_at__isnull=True)
+
     if not request.user.is_staff and booking.user != request.user:
-        return Response({"message": "Not authorized to view this booking."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"message": "Not authorized to view this booking."},
+                        status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
         serializer = BookingSerializer(booking)
-        return Response({"message": "Booking fetched successfully", "data": serializer.data}, status=status.HTTP_200_OK)
+        return Response({
+            "message": "Booking fetched successfully",
+            "data": serializer.data
+        })
 
-    serializer = BookingSerializer(booking, data=request.data, partial=True, context={'request': request})
+    # prevent updating cancelled booking
+    if booking.booking_status == Booking.Status.CANCELLED:
+        return Response({"message": "Cancelled bookings cannot be updated."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = BookingSerializer(
+        booking,
+        data=request.data,
+        partial=True,
+        context={'request': request}
+    )
+
     if serializer.is_valid():
         serializer.save()
-        return Response({"message": "Booking updated successfully", "data": serializer.data}, status=status.HTTP_200_OK)
-    return Response({"message": "Booking update failed", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            "message": "Booking updated successfully",
+            "data": serializer.data
+        })
+    return Response({
+        "message": "Booking update failed",
+        "errors": serializer.errors
+    }, status=status.HTTP_400_BAD_REQUEST)
 
 
+# ======================================================================
+# CANCEL BOOKING
+# ======================================================================
 @swagger_auto_schema(method='post', responses={200: "Booking cancelled"})
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def cancel_booking(request, pk):
     booking = get_object_or_404(Booking, pk=pk, deleted_at__isnull=True)
+
     if not request.user.is_staff and booking.user != request.user:
-        return Response({"message": "Not authorized to cancel this booking."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"message": "Not authorized to cancel this booking."},
+                        status=status.HTTP_403_FORBIDDEN)
 
     if booking.booking_status == Booking.Status.CANCELLED:
-        return Response({"message": "Booking is already cancelled."}, status=status.HTTP_200_OK)
+        return Response({"message": "Booking is already cancelled."},
+                        status=status.HTTP_200_OK)
+
+    slot = booking.slot
+
+    # Restore capacity
+    slot.capacity = F('capacity') + booking.attendees_count
+    slot.save()
 
     booking.cancel()
-    return Response({"message": "Booking cancelled successfully"}, status=status.HTTP_200_OK)
+
+    return Response({"message": "Booking cancelled successfully"},
+                    status=status.HTTP_200_OK)
