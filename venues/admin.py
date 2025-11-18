@@ -1,18 +1,47 @@
 from django.contrib import admin
+from django import forms
 from django.utils import timezone
 from venues.models import Venue
 from middleware.admin_administration_helpers import check_role_permission
 
 
+class VenueAdminForm(forms.ModelForm):
+    """Custom form to show * for mandatory fields"""
+    class Meta:
+        model = Venue
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add * to mandatory field labels
+        mandatory_fields = ['name', 'address', 'city', 'state', 'pincode', 'capacity']
+        for field_name in mandatory_fields:
+            if field_name in self.fields:
+                self.fields[field_name].label = f"{self.fields[field_name].label} *"
+
+
 @admin.register(Venue)
 class VenueAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'address', 'city', 'state', 'pincode', 'capacity')
+    form = VenueAdminForm
+    list_display = ('sr_no', 'name', 'address', 'city', 'state', 'pincode', 'capacity')
     search_fields = ('name', 'address', 'city', 'state', 'pincode')
     list_filter = ('city', 'state', 'capacity')
-    ordering = ('id',)
+    ordering = ['-id']
     list_per_page = 10
     readonly_fields = ('created_at', 'updated_at', 'deleted_at')
     actions = ['soft_delete_venues', 'restore_venues']
+
+    def changelist_view(self, request, extra_context=None):
+        self.request = request
+        return super().changelist_view(request, extra_context)
+
+    def sr_no(self, obj):
+        """Display serialized Sr No instead of database ID"""
+        queryset = self.get_queryset(self.request)
+        page_num = int(self.request.GET.get('p', 1))
+        current_index = list(queryset.values_list('pk', flat=True)).index(obj.pk) + 1
+        return (page_num - 1) * self.list_per_page + current_index
+    sr_no.short_description = "Sr No"
 
     # ------------------------------------------------
     # ✅ CONTROL MODULE VISIBILITY IN ADMIN DASHBOARD
