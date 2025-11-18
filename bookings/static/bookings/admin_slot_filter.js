@@ -4,24 +4,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!eventField || !slotField) return;
 
-    function loadSlots(eventId) {
-        slotField.innerHTML = '<option value="">---------</option>';
+    eventField.addEventListener("change", function () {
+        const eventId = this.value;
 
-        if (!eventId) return;
-
-        fetch(`/admin/slots/slot/get_slots/?event_id=${eventId}`)
+        fetch(`/admin/slots/slot/get-slots/?event_id=${eventId}`)
             .then(res => res.json())
             .then(data => {
+                slotField.innerHTML = "";
                 data.slots.forEach(slot => {
-                    const opt = document.createElement("option");
-                    opt.value = slot.id;
-                    opt.textContent = slot.label;
-                    slotField.appendChild(opt);
+                    const option = new Option(slot.label, slot.id);
+                    slotField.appendChild(option);
                 });
             });
-    }
-
-    eventField.addEventListener("change", () => {
-        loadSlots(eventField.value);
     });
 });
