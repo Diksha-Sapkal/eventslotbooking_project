@@ -157,12 +157,20 @@ class Booking(models.Model):
         errors = {}
         general_errors = []
 
+<<<<<<< Updated upstream
+=======
+        # Check if slot_id and event_id are set (before accessing related objects)
+>>>>>>> Stashed changes
         if not self.slot_id or not self.event_id:
             general_errors.append("Slot and Event are required.")
             if general_errors:
                 errors['__all__'] = general_errors
             raise ValidationError(errors)
 
+<<<<<<< Updated upstream
+=======
+        # Now safely access the related objects
+>>>>>>> Stashed changes
         slot = self.slot
         event = self.event
 
@@ -175,13 +183,19 @@ class Booking(models.Model):
             general_errors.append("This slot is blocked and cannot be booked.")
 
         # Deleted slot
+<<<<<<< Updated upstream
         if slot.deleted_at:
             general_errors.append("Cannot book a deleted slot.")
+=======
+        if slot.deleted_at is not None:
+            general_errors.append("Cannot book a slot that is no longer active.")
+>>>>>>> Stashed changes
 
         # Attendees positive
         if self.attendees_count <= 0:
             errors['attendees_count'] = "Attendees count must be greater than zero."
 
+<<<<<<< Updated upstream
         # Capacity check (on create OR when approving)
         existing_attendees = Booking.objects.filter(
             slot=slot,
@@ -205,6 +219,34 @@ class Booking(models.Model):
             slot__start_time__lt=slot.end_time,
             slot__end_time__gt=slot.start_time,
         ).exclude(pk=self.pk)
+=======
+        # Capacity validation (only applies for new bookings)
+        if not self.pk:
+            total_attendees = Booking.objects.filter(
+                slot=slot,
+                booking_status=Booking.Status.APPROVED,
+                deleted_at__isnull=True
+            ).exclude(pk=self.pk).aggregate(
+                models.Sum('attendees_count')
+            )['attendees_count__sum'] or 0
+
+            if self.attendees_count > slot.capacity:
+                errors['attendees_count'] = "Attendees count exceeds slot capacity."
+
+            elif (self.booking_status == Booking.Status.APPROVED and
+                  total_attendees + self.attendees_count > slot.capacity):
+                errors['slot'] = "Cannot approve booking: slot capacity exceeded."
+
+        # Overlap check (only new booking)
+        if self.user_id and slot:
+            overlapping = Booking.objects.filter(
+                user=self.user,
+                booking_status__in=[Booking.Status.PENDING, Booking.Status.APPROVED],
+                deleted_at__isnull=True,
+                slot__start_time__lt=slot.end_time,
+                slot__end_time__gt=slot.start_time,
+            ).exclude(pk=self.pk)
+>>>>>>> Stashed changes
 
         if overlapping.exists():
             errors['slot'] = "You already have a booking that overlaps with this time."
@@ -262,7 +304,12 @@ class Booking(models.Model):
             self.save(update_fields=['booking_status', 'updated_at'])
 
     def approve(self):
+<<<<<<< Updated upstream
         """Admin approves booking."""
         if self.booking_status != Booking.Status.APPROVED:
             self.booking_status = Booking.Status.APPROVED
             self.save(update_fields=['booking_status', 'updated_at'])
+=======
+        self.booking_status = Booking.Status.APPROVED
+        self.save(update_fields=['booking_status', 'updated_at'])
+>>>>>>> Stashed changes
