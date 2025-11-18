@@ -29,20 +29,19 @@ class Event(models.Model):
     name = models.CharField(max_length=255)
     venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='events')
     description = models.TextField(blank=True, null=True)
+
+    # DATE ONLY (correct)
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField(default=timezone.now)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(null=True, blank=True)  # soft delete
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.venue.name}"
 
     def clean(self):
-        """
-        Ensure that end_date is not before start_date.
-        Same-day events (start_date == end_date) are allowed.
-        """
         if self.end_date < self.start_date:
             raise ValidationError("End date cannot be before start date.")
 
