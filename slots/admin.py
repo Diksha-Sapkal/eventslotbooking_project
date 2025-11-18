@@ -182,9 +182,6 @@ from django.contrib import admin
 from django import forms
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 
 from slots.models import Slot
 
@@ -248,11 +245,7 @@ def restore_slots(modeladmin, request, queryset):
 # -------------------------
 # Slot Admin
 # -------------------------
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
 from slots.models.slot_model import Slot
 from middleware.admin_administration_helpers import check_role_permission
 
@@ -308,13 +301,7 @@ class SlotAdminForm(forms.ModelForm):
         return cleaned_data
 
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
 @admin.register(Slot)
 class SlotAdmin(admin.ModelAdmin):
     form = SlotAdminForm
@@ -323,12 +310,12 @@ class SlotAdmin(admin.ModelAdmin):
         'capacity', 'booked_capacity_display', 'remaining_capacity_display',
         'is_blocked'
     ]
-<<<<<<< Updated upstream
+
     list_filter = ("event", "is_blocked", "deleted_at")
     search_fields = ("event__name", "event__title")
     actions = [block_slots, unblock_slots, soft_delete_slots, restore_slots]
     readonly_fields = ['created_at', 'updated_at']
-=======
+
     search_fields = ['event__name', 'event__venue__name']
     list_filter = [
         'event', 'is_blocked', 'capacity',
@@ -347,10 +334,7 @@ class SlotAdmin(admin.ModelAdmin):
             'js/restrict_past_dates.js',
             'js/clear_field_errors.js',
         )
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
+
 
     def changelist_view(self, request, extra_context=None):
         self.request = request
@@ -364,7 +348,7 @@ class SlotAdmin(admin.ModelAdmin):
         current_index = list(queryset.values_list('pk', flat=True)).index(obj.pk) + 1
         return (page_num - 1) * self.list_per_page + current_index
     sr_no.short_description = "Sr No"
->>>>>>> Stashed changes
+
 
     def changelist_view(self, request, extra_context=None):
         self.request = request
@@ -378,7 +362,7 @@ class SlotAdmin(admin.ModelAdmin):
         current_index = list(queryset.values_list('pk', flat=True)).index(obj.pk) + 1
         return (page_num - 1) * self.list_per_page + current_index
     sr_no.short_description = "Sr No"
->>>>>>> Stashed changes
+
 
     def changelist_view(self, request, extra_context=None):
         self.request = request
@@ -392,7 +376,6 @@ class SlotAdmin(admin.ModelAdmin):
         current_index = list(queryset.values_list('pk', flat=True)).index(obj.pk) + 1
         return (page_num - 1) * self.list_per_page + current_index
     sr_no.short_description = "Sr No"
->>>>>>> Stashed changes
 
     # -------------------------
     # Display serial number
@@ -419,20 +402,15 @@ class SlotAdmin(admin.ModelAdmin):
         return obj.remaining_capacity()
     remaining_capacity_display.short_description = "Available"
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
     # -------------------------
     # Include deleted slots in queryset
     # -------------------------
     def get_queryset(self, request):
         self.request = request  # Needed for sr_no calculation
         return super().get_queryset(request)
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
+
     def save_model(self, request, obj, form, change):
         """Validate that start_time and end_time are not in the past"""
         now = timezone.now()
@@ -503,13 +481,5 @@ class SlotAdmin(admin.ModelAdmin):
     def restore_slots(self, request, queryset):
         updated = queryset.update(deleted_at=None)
         self.message_user(request, f"{updated} slot(s) restored.")
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
     restore_slots.short_description = "Restore selected slots"
->>>>>>> Stashed changes
-=======
-    restore_slots.short_description = "Restore selected slots"
->>>>>>> Stashed changes
-=======
-    restore_slots.short_description = "Restore selected slots"
->>>>>>> Stashed changes

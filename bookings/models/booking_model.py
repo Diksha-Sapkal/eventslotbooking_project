@@ -157,36 +157,17 @@ class Booking(models.Model):
         errors = {}
         general_errors = []
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-        # Check if slot_id and event_id are set (before accessing related objects)
->>>>>>> Stashed changes
-=======
-        # Check if slot_id and event_id are set (before accessing related objects)
->>>>>>> Stashed changes
-=======
-        # Check if slot_id and event_id are set (before accessing related objects)
->>>>>>> Stashed changes
+
+
         if not self.slot_id or not self.event_id:
             general_errors.append("Slot and Event are required.")
             if general_errors:
                 errors['__all__'] = general_errors
             raise ValidationError(errors)
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-        # Now safely access the related objects
->>>>>>> Stashed changes
-=======
-        # Now safely access the related objects
->>>>>>> Stashed changes
-=======
-        # Now safely access the related objects
->>>>>>> Stashed changes
+
+
+
         slot = self.slot
         event = self.event
 
@@ -199,49 +180,18 @@ class Booking(models.Model):
             general_errors.append("This slot is blocked and cannot be booked.")
 
         # Deleted slot
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
         if slot.deleted_at:
             general_errors.append("Cannot book a deleted slot.")
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
         if slot.deleted_at is not None:
             general_errors.append("Cannot book a slot that is no longer active.")
->>>>>>> Stashed changes
+
 
         # Attendees positive
         if self.attendees_count <= 0:
             errors['attendees_count'] = "Attendees count must be greater than zero."
 
-<<<<<<< Updated upstream
-        # Capacity check (on create OR when approving)
-        existing_attendees = Booking.objects.filter(
-            slot=slot,
-            booking_status=Booking.Status.APPROVED,
-            deleted_at__isnull=True
-        ).exclude(pk=self.pk).aggregate(
-            models.Sum('attendees_count')
-        )['attendees_count__sum'] or 0
-
-        total_after = existing_attendees + self.attendees_count
-
-        if self.booking_status == Booking.Status.APPROVED:
-            if total_after > slot.capacity:
-                errors['slot'] = "Slot capacity exceeded."
-
-        # Overlapping bookings
-        overlapping = Booking.objects.filter(
-            user=self.user,
-            booking_status__in=[Booking.Status.PENDING, Booking.Status.APPROVED],
-            deleted_at__isnull=True,
-            slot__start_time__lt=slot.end_time,
-            slot__end_time__gt=slot.start_time,
-        ).exclude(pk=self.pk)
-=======
         # Capacity validation (only applies for new bookings)
         if not self.pk:
             total_attendees = Booking.objects.filter(
@@ -268,7 +218,6 @@ class Booking(models.Model):
                 slot__start_time__lt=slot.end_time,
                 slot__end_time__gt=slot.start_time,
             ).exclude(pk=self.pk)
->>>>>>> Stashed changes
 
         if overlapping.exists():
             errors['slot'] = "You already have a booking that overlaps with this time."
@@ -326,20 +275,12 @@ class Booking(models.Model):
             self.save(update_fields=['booking_status', 'updated_at'])
 
     def approve(self):
-<<<<<<< Updated upstream
+
         """Admin approves booking."""
         if self.booking_status != Booking.Status.APPROVED:
             self.booking_status = Booking.Status.APPROVED
             self.save(update_fields=['booking_status', 'updated_at'])
-=======
+
         self.booking_status = Booking.Status.APPROVED
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+
         self.save(update_fields=['booking_status', 'updated_at'])
->>>>>>> Stashed changes
-=======
-        self.save(update_fields=['booking_status', 'updated_at'])
->>>>>>> Stashed changes
-=======
-        self.save(update_fields=['booking_status', 'updated_at'])
->>>>>>> Stashed changes
