@@ -183,6 +183,7 @@ from django import forms
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 from slots.models import Slot
 
@@ -247,6 +248,8 @@ def restore_slots(modeladmin, request, queryset):
 # Slot Admin
 # -------------------------
 =======
+=======
+>>>>>>> Stashed changes
 from slots.models.slot_model import Slot
 from middleware.admin_administration_helpers import check_role_permission
 
@@ -302,6 +305,9 @@ class SlotAdminForm(forms.ModelForm):
         return cleaned_data
 
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 @admin.register(Slot)
 class SlotAdmin(admin.ModelAdmin):
@@ -335,6 +341,22 @@ class SlotAdmin(admin.ModelAdmin):
             'js/restrict_past_dates.js',
             'js/clear_field_errors.js',
         )
+<<<<<<< Updated upstream
+=======
+
+    def changelist_view(self, request, extra_context=None):
+        self.request = request
+        return super().changelist_view(request, extra_context)
+
+    def sr_no(self, obj):
+        """Display serialized Sr No instead of database ID"""
+        queryset = self.get_queryset(self.request)
+        page_num = int(self.request.GET.get('p', 1))
+        start_index = (page_num - 1) * self.list_per_page + 1
+        current_index = list(queryset.values_list('pk', flat=True)).index(obj.pk) + 1
+        return (page_num - 1) * self.list_per_page + current_index
+    sr_no.short_description = "Sr No"
+>>>>>>> Stashed changes
 
     def changelist_view(self, request, extra_context=None):
         self.request = request
@@ -376,6 +398,7 @@ class SlotAdmin(admin.ModelAdmin):
     remaining_capacity_display.short_description = "Available"
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     # -------------------------
     # Include deleted slots in queryset
     # -------------------------
@@ -383,6 +406,8 @@ class SlotAdmin(admin.ModelAdmin):
         self.request = request  # Needed for sr_no calculation
         return super().get_queryset(request)
 =======
+=======
+>>>>>>> Stashed changes
     def save_model(self, request, obj, form, change):
         """Validate that start_time and end_time are not in the past"""
         now = timezone.now()
@@ -453,5 +478,9 @@ class SlotAdmin(admin.ModelAdmin):
     def restore_slots(self, request, queryset):
         updated = queryset.update(deleted_at=None)
         self.message_user(request, f"{updated} slot(s) restored.")
+<<<<<<< Updated upstream
+    restore_slots.short_description = "Restore selected slots"
+>>>>>>> Stashed changes
+=======
     restore_slots.short_description = "Restore selected slots"
 >>>>>>> Stashed changes
