@@ -159,6 +159,10 @@ class Booking(models.Model):
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        # Check if slot_id and event_id are set (before accessing related objects)
+>>>>>>> Stashed changes
 =======
         # Check if slot_id and event_id are set (before accessing related objects)
 >>>>>>> Stashed changes
@@ -173,6 +177,10 @@ class Booking(models.Model):
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+        # Now safely access the related objects
+>>>>>>> Stashed changes
 =======
         # Now safely access the related objects
 >>>>>>> Stashed changes
@@ -193,9 +201,12 @@ class Booking(models.Model):
         # Deleted slot
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         if slot.deleted_at:
             general_errors.append("Cannot book a deleted slot.")
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         if slot.deleted_at is not None:
@@ -323,6 +334,10 @@ class Booking(models.Model):
 =======
         self.booking_status = Booking.Status.APPROVED
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+        self.save(update_fields=['booking_status', 'updated_at'])
+>>>>>>> Stashed changes
+=======
         self.save(update_fields=['booking_status', 'updated_at'])
 >>>>>>> Stashed changes
 =======

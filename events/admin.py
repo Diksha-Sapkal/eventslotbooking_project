@@ -82,6 +82,7 @@ class EventForm(forms.ModelForm):
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def __init__(self, *args, **kwargs):
       super().__init__(*args, **kwargs)
       for field_name, field in self.fields.items():
@@ -109,6 +110,8 @@ def clean(self):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
@@ -134,6 +137,9 @@ def clean(self):
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
