@@ -83,6 +83,52 @@ class Booking(models.Model):
         if errors:
             raise ValidationError(errors)
 
+# def clean(self):
+#     # Skip all validation when cancelling
+#     if self.booking_status == Booking.Status.CANCELLED:
+#         return
+
+#     errors = {}
+#     general = []
+
+#     # Skip validation if FK fields are not yet set (admin add form)
+#     if not self.slot_id or not self.event_id:
+#         return
+
+#     slot = self.slot
+#     event = self.event
+
+#     # Slot / Event mismatch
+#     if slot.event_id != event.id:
+#         general.append("Selected slot does not belong to this event.")
+
+#     # Slot blocked
+#     if slot.is_blocked:
+#         general.append("This slot is blocked and cannot be booked.")
+
+#     # Invalid attendees count
+#     if self.attendees_count <= 0:
+#         errors["attendees_count"] = "Attendees count must be greater than zero."
+
+#     # Approved attendees
+#     total_approved = Booking.objects.filter(
+#         slot=slot,
+#         booking_status=Booking.Status.APPROVED,
+#         deleted_at__isnull=True,
+#     ).exclude(pk=self.pk).aggregate(sum=Sum("attendees_count"))["sum"] or 0
+
+#     # Requested seats
+#     total_requested = total_approved + self.attendees_count
+
+#     # Capacity validation
+#     if total_requested > slot.capacity:
+#         general.append("Slot capacity exceeded.")
+
+#     if general:
+#         errors["__all__"] = general
+
+#     if errors:
+#         raise ValidationError(errors)
     # -------------------------------------------------------------
     # SAVE: auto block/unblock slot
     # -------------------------------------------------------------
