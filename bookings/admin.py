@@ -247,33 +247,36 @@ class BookingStatusChangeForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # -----------------------------
-        # CASE 1 - event selected in dropdown (POST)
+        # CASE 1 — Event selected (POST)
         # -----------------------------
         if "event" in self.data:
             try:
                 event_id = int(self.data.get("event"))
-                self.fields["slot"].queryset = Slot.objects.filter(
-                    event_id=event_id,
-                    deleted_at__isnull=True
-                )
+                if "slot" in self.fields:     # FIX
+                    self.fields["slot"].queryset = Slot.objects.filter(
+                        event_id=event_id,
+                        deleted_at__isnull=True
+                    )
                 return
             except (ValueError, TypeError):
                 pass
 
         # -----------------------------
-        # CASE 2 - Edit existing booking 
+        # CASE 2 — Editing an existing booking
         # -----------------------------
         if self.instance.pk:
-            self.fields["slot"].queryset = Slot.objects.filter(
-                event=self.instance.event,
-                deleted_at__isnull=True
-            )
+            if "slot" in self.fields:         # FIX
+                self.fields["slot"].queryset = Slot.objects.filter(
+                    event=self.instance.event,
+                    deleted_at__isnull=True
+                )
             return
 
         # -----------------------------
-        # CASE 3 - Add form first load (no event yet)
+        # CASE 3 — Add form (first load)
         # -----------------------------
-        self.fields["slot"].queryset = Slot.objects.none()
+        if "slot" in self.fields:             # FIX
+            self.fields["slot"].queryset = Slot.objects.none()
 
 
 
@@ -318,13 +321,12 @@ class BookingAdmin(admin.ModelAdmin):
     exclude = ["user"]
 
     # -------------------------
-    # Most Important Fix:
-    # Filter slot dropdown ALWAYS
+    # Fix slot dropdown in Admin
     # -------------------------
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "slot":
 
-            # CASE A — Edit form
+            # CASE A — Editing an object
             if request.resolver_match.kwargs.get("object_id"):
                 booking_id = request.resolver_match.kwargs.get("object_id")
                 try:
@@ -335,9 +337,10 @@ class BookingAdmin(admin.ModelAdmin):
                     )
                 except Booking.DoesNotExist:
                     kwargs["queryset"] = Slot.objects.none()
+
                 return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-            # CASE B — Add form with ?event=<id>
+            # CASE B — Adding with ?event=<id>
             event_id = request.GET.get("event")
             if event_id:
                 kwargs["queryset"] = Slot.objects.filter(
@@ -348,7 +351,6 @@ class BookingAdmin(admin.ModelAdmin):
                 kwargs["queryset"] = Slot.objects.none()
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
 
     # -------------------------
     # Serial number

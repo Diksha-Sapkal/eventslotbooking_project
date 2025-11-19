@@ -6,8 +6,9 @@ from django.utils import timezone
 
 class Slot(models.Model):
     event = models.ForeignKey('events.Event', on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    start_time = models.DateTimeField(null=False, blank=False)
+    end_time = models.DateTimeField(null=False, blank=False)
+    
     capacity = models.PositiveIntegerField()
     is_blocked = models.BooleanField(default=False)
 
