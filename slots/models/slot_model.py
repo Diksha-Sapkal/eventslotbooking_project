@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -31,6 +30,10 @@ class Slot(models.Model):
         return self.capacity - self.remaining_capacity()
 
     def clean(self):
+        # Skip validation if either field is missing (admin formset empty rows)
+        if not self.start_time or not self.end_time:
+            return
+
         if self.start_time >= self.end_time:
             raise ValidationError("End time must be greater than start time.")
 
@@ -48,6 +51,7 @@ class Slot(models.Model):
         if self.end_time.date() > event.end_date:
             raise ValidationError("Slot end time must be within event date range.")
 
+        # Check overlapping slots
         qs = Slot.objects.filter(
             event=self.event,
             deleted_at__isnull=True
