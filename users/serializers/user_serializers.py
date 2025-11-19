@@ -55,7 +55,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             validated_data['is_staff'] = True
         else:
             validated_data['is_superuser'] = False
-            validated_data['is_staff'] = False
+            validated_data['is_staff'] = True
 
         user = User.objects.create(role=role_obj, **validated_data)
         user.set_password(password)
