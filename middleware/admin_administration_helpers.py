@@ -7,10 +7,10 @@ def check_role_permission(user, module_name, action):
     action: 'read', 'create', 'update', 'delete'
     """
     # Superuser or Superadmin → full access
-    if user.is_superuser or (
-        getattr(user, 'role', None) and user.role.name.lower() == 'superadmin'
-    ):
-        return True
+    # if user.is_superuser or (
+    #     getattr(user, 'role', None) and user.role.name.lower() == 'superadmin'
+    # ):
+    #     return True
 
     if not hasattr(user, 'role') or user.role is None:
         return False
