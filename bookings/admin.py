@@ -233,6 +233,11 @@ class BookingStatusChangeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # ⭐ ADD ASTERISK (*) TO ALL REQUIRED FIELD LABELS
+        for field_name, field in self.fields.items():
+            if field.required:
+                field.label = f"{field.label} *"
+
         # ⭐ If slot field is readonly OR hidden, it will not exist
         if "slot" not in self.fields:
             return
