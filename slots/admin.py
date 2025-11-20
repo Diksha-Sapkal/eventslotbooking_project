@@ -127,6 +127,7 @@ class SlotAdmin(admin.ModelAdmin):
         slots = Slot.objects.filter(
             event_id=event_id,
             deleted_at__isnull=True
+            
         ).order_by("start_time")
 
         return JsonResponse({
